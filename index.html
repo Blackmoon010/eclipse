@@ -4,1023 +4,757 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>BLACKMOON 0-1-0 // ECLIPSE</title>
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Font Awesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <!-- Tesseract.js CDN for in-browser on-device OCR -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.1.1/tesseract.min.js"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            lunar: {
-              950: '#07090e',
-              900: '#0d111a',
-              850: '#121724',
-              800: '#1b2336',
-              700: '#2a3550',
-              600: '#3d4d73'
-            },
-            accent: {
-              cyan: '#00f0ff',
-              emerald: '#10b981',
-              violet: '#8b5cf6',
-              amber: '#f59e0b'
-            }
-          },
-          fontFamily: {
-            mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace']
-          }
-        }
-      }
-    }
-  </script>
+  <meta name="theme-color" content="#0a0c10">
+  <meta name="description" content="Autonomous Mobile Business Card Batch Scanner & Multi-VCF Exporter">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
   <style>
-    * {
-      -webkit-tap-highlight-color: transparent;
-      touch-action: manipulation;
+    :root {
+      --bg-primary: #0a0c10;
+      --bg-card: #12161f;
+      --bg-input: #0b0d13;
+      --cyan: #00f0ff;
+      --cyan-dim: rgba(0, 240, 255, 0.15);
+      --cyan-glow: 0 0 16px rgba(0, 240, 255, 0.35);
+      --border: #1e2638;
+      --border-focus: #00f0ff;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --success: #00ff88;
+      --danger: #ff3366;
+      --font-display: 'Chakra Petch', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     }
-    input, textarea, button {
-      font-size: 16px;
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 40px;
     }
-    .custom-scrollbar::-webkit-scrollbar {
-      width: 4px;
+
+    header {
+      background: #06070a;
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(8px);
     }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: #2a3550;
-      border-radius: 9999px;
+    .header-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 800px;
+      margin: 0 auto;
     }
-    .lunar-glow {
-      box-shadow: 0 0 25px -5px rgba(0, 240, 255, 0.15);
+    .brand-title {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
-    .badge-scanline {
-      background: repeating-linear-gradient(
-        0deg,
-        rgba(0, 240, 255, 0.03),
-        rgba(0, 240, 255, 0.03) 1px,
-        transparent 1px,
-        transparent 2px
-      );
+    .bold-brand { font-weight: 700; color: #fff; }
+    .light-brand { font-weight: 400; color: var(--cyan); }
+    .badge-010 {
+      background: var(--cyan-dim);
+      border: 1px solid var(--cyan);
+      color: var(--cyan);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 1px 6px;
+      border-radius: 3px;
+      letter-spacing: 1.5px;
+    }
+    .sub-brand {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+    }
+
+    .nav-tabs {
+      display: flex;
+      max-width: 800px;
+      margin: 12px auto 0;
+      padding: 0 16px;
+      gap: 8px;
+      width: 100%;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 10px 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-muted);
+      font-family: var(--font-display);
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+    .tab-btn.active {
+      background: var(--cyan-dim);
+      border-color: var(--cyan);
+      color: var(--cyan);
+      box-shadow: var(--cyan-glow);
+    }
+    .deck-counter {
+      background: var(--cyan);
+      color: #000;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      padding: 1px 6px;
+      border-radius: 10px;
+      font-weight: bold;
+    }
+
+    main {
+      flex: 1;
+      max-width: 800px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 16px;
+    }
+    .view-panel { display: none; }
+    .view-panel.active { display: block; }
+
+    .action-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      padding-bottom: 8px;
+    }
+    .panel-title {
+      font-family: var(--font-display);
+      font-size: 0.95rem;
+      color: var(--cyan);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-camera-trigger {
+      width: 100%;
+      background: linear-gradient(135deg, #00d2ff 0%, #00f0ff 100%);
+      color: #050b14;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.05rem;
+      padding: 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 4px 16px rgba(0, 240, 255, 0.4);
+      margin-bottom: 8px;
+    }
+    .btn-camera-trigger:active { transform: scale(0.98); }
+    .file-input { display: none; }
+
+    .ocr-status {
+      display: none;
+      background: var(--bg-input);
+      border: 1px dashed var(--cyan);
+      border-radius: 6px;
+      padding: 12px;
+      margin-top: 12px;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--cyan);
+    }
+    .progress-bar-container {
+      width: 100%;
+      height: 4px;
+      background: #1a2234;
+      border-radius: 2px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%;
+      background: var(--cyan);
+      width: 0%;
+      transition: width 0.2s ease;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .full-width { grid-column: span 2; }
+    .input-group label {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .input-group input, .input-group textarea {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 10px;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 0.85rem;
+      transition: border-color 0.2s;
+    }
+    .input-group input:focus, .input-group textarea:focus {
+      outline: none;
+      border-color: var(--border-focus);
+      box-shadow: 0 0 8px rgba(0, 240, 255, 0.2);
+    }
+
+    .btn-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .btn-action {
+      padding: 12px;
+      border-radius: 5px;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border: 1px solid transparent;
+    }
+    .btn-queue-next {
+      background: var(--cyan);
+      color: #050b14;
+      grid-column: span 2;
+      padding: 14px;
+      font-size: 0.95rem;
+      box-shadow: var(--cyan-glow);
+    }
+    .btn-vcf-single {
+      background: transparent;
+      border-color: var(--border);
+      color: var(--text);
+    }
+    .btn-vcf-single:hover { border-color: var(--cyan); color: var(--cyan); }
+    .btn-clear {
+      background: transparent;
+      border-color: #3d1b26;
+      color: var(--danger);
+    }
+
+    .deck-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--cyan);
+      border-radius: 6px;
+      padding: 12px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .deck-info-name {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #fff;
+    }
+    .deck-info-meta {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .deck-item-actions {
+      display: flex;
+      gap: 6px;
+    }
+    .btn-icon-tiny {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 8px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .btn-icon-tiny:hover { color: var(--text); border-color: var(--cyan); }
+    .btn-icon-tiny.delete:hover { color: var(--danger); border-color: var(--danger); }
+
+    .btn-deck-share {
+      width: 100%;
+      background: linear-gradient(135deg, #00f0ff 0%, #0088ff 100%);
+      color: #000;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 15px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      box-shadow: 0 4px 16px rgba(0, 240, 255, 0.4);
+    }
+    .btn-deck-download-all {
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--cyan);
+      color: var(--cyan);
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.85rem;
+      padding: 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #00f0ff;
+      color: #000;
+      padding: 10px 18px;
+      border-radius: 30px;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.85rem;
+      z-index: 200;
+      display: none;
+      box-shadow: 0 4px 20px rgba(0, 240, 255, 0.5);
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 </head>
-<body class="bg-lunar-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-cyan-500 selection:text-black">
+<body>
 
-  <!-- Header -->
-  <header class="sticky top-0 z-40 bg-lunar-900/90 backdrop-blur-md border-b border-lunar-800 px-4 py-3 flex items-center justify-between">
-    <div class="flex items-center space-x-3">
-      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 via-blue-600 to-indigo-700 flex items-center justify-center shadow-lg shadow-cyan-500/20 border border-cyan-400/30">
-        <i class="fa-solid fa-moon text-white text-lg"></i>
+  <header>
+    <div class="header-inner">
+      <div>
+        <div class="brand-title">
+          <span class="bold-brand">BLACK</span><span class="light-brand">MOON</span>
+          <span class="badge-010">0-1-0</span>
+        </div>
+        <div class="sub-brand">// ECLIPSE • MULTI-VCF CARD BATCH ENGINE</div>
       </div>
       <div>
-        <div class="flex items-center gap-2">
-          <span class="font-extrabold text-sm tracking-widest text-white uppercase font-mono">BLACK<span class="font-light text-slate-300">MOON</span></span>
-          <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800/80 font-bold">0-1-0</span>
-        </div>
-        <h1 class="font-bold text-xs tracking-wider text-cyan-400 font-mono flex items-center gap-1.5 mt-0.5">
-          <span>// ECLIPSE</span>
-          <span class="text-[9px] text-slate-400 font-sans hidden sm:inline">• Electronic Card Loader &amp; Independent Parsing Scanner</span>
-        </h1>
+        <button class="btn-icon-tiny" onclick="resetActiveForm()" title="Clear Screen"><i class="fa-solid fa-arrows-rotate"></i></button>
       </div>
-    </div>
-    
-    <div class="flex items-center gap-2">
-      <button id="pwaHelpBtn" class="text-xs font-mono px-2.5 py-1.5 rounded-lg bg-lunar-850 hover:bg-lunar-800 text-slate-300 border border-lunar-700 flex items-center gap-1.5 transition">
-        <i class="fa-brands fa-github text-slate-400"></i>
-        <span class="hidden sm:inline">DEPLOY</span>
-      </button>
     </div>
   </header>
 
-  <!-- Navigation Mode Bar -->
-  <nav class="bg-lunar-900/60 border-b border-lunar-800/80 px-4 py-2 sticky top-[61px] z-30 backdrop-blur-sm">
-    <div class="max-w-xl mx-auto flex items-center justify-center p-1 bg-lunar-950/80 rounded-xl border border-lunar-800">
-      <button id="navScanTab" class="flex-1 py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition bg-cyan-600 text-black font-mono shadow-md shadow-cyan-500/20">
-        <i class="fa-solid fa-crosshairs"></i>
-        <span>CAPTURE &amp; PARSE</span>
-      </button>
-      <button id="navDeckTab" class="flex-1 py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition text-slate-400 hover:text-slate-200 font-mono">
-        <i class="fa-solid fa-layer-group"></i>
-        <span>QUEUE DECK</span>
-        <span id="deckBadge" class="bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 text-[10px] font-bold px-1.5 py-0.5 rounded-full font-mono">0</span>
-      </button>
-    </div>
-  </nav>
+  <div class="nav-tabs">
+    <button class="tab-btn active" id="tabScan" onclick="switchTab('scan')">
+      <i class="fa-solid fa-camera"></i> SCAN & PARSE
+    </button>
+    <button class="tab-btn" id="tabDeck" onclick="switchTab('deck')">
+      <i class="fa-solid fa-layer-group"></i> BATCH DECK
+      <span class="deck-counter" id="deckBadge">0</span>
+    </button>
+  </div>
 
-  <!-- Main Container -->
-  <main class="flex-1 w-full max-w-xl mx-auto p-4 flex flex-col space-y-4 pb-20">
-
-    <!-- VIEW 1: SCANNER & ACTIVE CARD EDITOR -->
-    <div id="viewScanner" class="space-y-4">
-      
-      <!-- Capture Section -->
-      <section class="bg-lunar-900/90 border border-lunar-800 rounded-2xl p-4 sm:p-5 shadow-xl relative overflow-hidden lunar-glow badge-scanline">
-        <div class="absolute -top-16 -right-16 w-36 h-36 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
-
-        <div class="flex flex-col gap-3">
-          <div class="flex items-center justify-between font-mono">
-            <span class="text-[11px] uppercase tracking-wider font-bold text-slate-400 flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
-              OPTICAL ACQUISITION
-            </span>
-            <span id="batchCountHint" class="text-xs text-cyan-400 font-medium">0 in queue</span>
-          </div>
-
-          <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden">
-          <input type="file" id="galleryInput" accept="image/*" class="hidden">
-
-          <div class="grid grid-cols-2 gap-3 mt-1 font-mono">
-            <button id="btnCamera" type="button" class="flex items-center justify-center gap-2.5 py-3.5 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-black font-extrabold shadow-lg shadow-cyan-500/25 active:scale-[0.98] transition tracking-tight">
-              <i class="fa-solid fa-camera text-base"></i>
-              <span>REAR CAM</span>
-            </button>
-
-            <button id="btnGallery" type="button" class="flex items-center justify-center gap-2.5 py-3.5 px-4 rounded-xl bg-lunar-850 hover:bg-lunar-800 text-slate-200 border border-lunar-700 font-semibold active:scale-[0.98] transition">
-              <i class="fa-solid fa-file-image text-cyan-400"></i>
-              <span>GALLERY</span>
-            </button>
-          </div>
+  <main>
+    <!-- SCANNER & ACTIVE CARD VIEW -->
+    <div class="view-panel active" id="panelScan">
+      <div class="action-panel">
+        <div class="panel-header">
+          <span class="panel-title"><i class="fa-solid fa-bolt"></i> OPTICAL ACQUISITION</span>
+          <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted);" id="deckQuickCount">0 in deck</span>
         </div>
 
-        <!-- Preview Thumbnail & Progress -->
-        <div id="imagePreviewContainer" class="hidden mt-4 pt-4 border-t border-lunar-800 flex items-center gap-3">
-          <div class="w-16 h-16 rounded-xl overflow-hidden border border-lunar-700 bg-lunar-950 flex-shrink-0 relative">
-            <img id="previewImg" src="" alt="Card Preview" class="w-full h-full object-cover">
-          </div>
-          <div class="flex-1 min-w-0 font-mono">
-            <p id="scanFileName" class="text-xs font-medium text-slate-200 truncate">card_raw.jpg</p>
-            <p id="ocrStatusText" class="text-xs text-cyan-400 font-medium flex items-center gap-1.5 mt-0.5">
-              <i class="fa-solid fa-circle-notch fa-spin"></i> Processing OCR...
-            </p>
-            <div class="w-full bg-lunar-950 h-1.5 rounded-full overflow-hidden mt-1.5 border border-lunar-800">
-              <div id="ocrProgressBar" class="bg-cyan-400 h-full w-0 transition-all duration-200 shadow-sm shadow-cyan-400"></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Raw OCR Debug Accordion -->
-      <div id="rawOcrSection" class="hidden bg-lunar-900 border border-lunar-800 rounded-xl overflow-hidden text-xs font-mono">
-        <button id="toggleRawOcrBtn" type="button" class="w-full py-2.5 px-3 flex items-center justify-between text-slate-400 hover:text-slate-200 transition">
-          <span><i class="fa-solid fa-terminal mr-1.5 text-cyan-400"></i> Raw Extracted Buffer</span>
-          <i id="rawOcrIcon" class="fa-solid fa-chevron-down"></i>
+        <input type="file" id="cameraInput" class="file-input" accept="image/*" capture="environment">
+        <button class="btn-camera-trigger" onclick="document.getElementById('cameraInput').click()">
+          <i class="fa-solid fa-camera"></i> SNAP CARD WITH CAMERA
         </button>
-        <div id="rawOcrContent" class="hidden p-3 border-t border-lunar-800 bg-lunar-950 text-slate-400 max-h-36 overflow-y-auto whitespace-pre-wrap select-all custom-scrollbar"></div>
+
+        <div class="ocr-status" id="ocrBox">
+          <div id="ocrMessage"><i class="fa-solid fa-spinner fa-spin"></i> Reading text via On-Device OCR...</div>
+          <div class="progress-bar-container">
+            <div class="progress-bar" id="ocrProgress"></div>
+          </div>
+        </div>
       </div>
 
-      <!-- Current Card Form -->
-      <section id="parsedContactForm" class="bg-lunar-900 border border-lunar-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-4">
-        <div class="flex items-center justify-between border-b border-lunar-800 pb-3">
-          <h2 class="text-xs font-bold text-slate-200 uppercase tracking-wider font-mono flex items-center gap-2">
-            <i class="fa-solid fa-id-card-clip text-cyan-400"></i> Active Contact Buffer
-          </h2>
-          <button id="btnClear" type="button" class="text-xs text-slate-400 hover:text-rose-400 font-mono transition flex items-center gap-1">
-            <i class="fa-solid fa-rotate-left"></i> Reset
+      <!-- ACTIVE CONTACT BUFFER FORM -->
+      <div class="action-panel">
+        <div class="panel-header">
+          <span class="panel-title"><i class="fa-regular fa-id-card"></i> Contact Buffer</span>
+          <button class="btn-icon-tiny" onclick="resetActiveForm()"><i class="fa-solid fa-eraser"></i></button>
+        </div>
+
+        <div class="form-grid">
+          <div class="input-group">
+            <label>First Name</label>
+            <input type="text" id="fn" placeholder="First Name">
+          </div>
+          <div class="input-group">
+            <label>Last Name</label>
+            <input type="text" id="ln" placeholder="Last Name">
+          </div>
+          <div class="input-group full-width">
+            <label>Company / Agency</label>
+            <input type="text" id="company" placeholder="Organization">
+          </div>
+          <div class="input-group full-width">
+            <label>Job Title</label>
+            <input type="text" id="title" placeholder="Position / Title">
+          </div>
+          <div class="input-group">
+            <label>Mobile Phone</label>
+            <input type="tel" id="mobile" placeholder="Mobile">
+          </div>
+          <div class="input-group">
+            <label>Work Phone</label>
+            <input type="tel" id="workPhone" placeholder="Office / Direct">
+          </div>
+          <div class="input-group full-width">
+            <label>Email Address</label>
+            <input type="email" id="email" placeholder="email@address.com">
+          </div>
+          <div class="input-group full-width">
+            <label>Website</label>
+            <input type="text" id="web" placeholder="https://...">
+          </div>
+          <div class="input-group full-width">
+            <label>Address</label>
+            <input type="text" id="address" placeholder="Street, City, State ZIP">
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-action btn-queue-next" onclick="queueAndScanNext()">
+            <i class="fa-solid fa-plus-circle"></i> QUEUE & SNAP NEXT CARD
+          </button>
+          <button class="btn-action btn-vcf-single" onclick="saveSingleCardVCF()">
+            <i class="fa-solid fa-floppy-disk"></i> Save Single .VCF
+          </button>
+          <button class="btn-action btn-clear" onclick="resetActiveForm()">
+            <i class="fa-solid fa-trash"></i> Clear Form
           </button>
         </div>
-
-        <form id="contactForm" class="space-y-3.5" onsubmit="event.preventDefault();">
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs font-medium text-slate-400 mb-1" for="firstName">First Name</label>
-              <input type="text" id="firstName" placeholder="John" class="w-full bg-lunar-950 border border-lunar-700/80 rounded-xl px-3 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400">
-            </div>
-            <div>
-              <label class="block text-xs font-medium text-slate-400 mb-1" for="lastName">Last Name</label>
-              <input type="text" id="lastName" placeholder="Doe" class="w-full bg-lunar-950 border border-lunar-700/80 rounded-xl px-3 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400">
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-xs font-medium text-slate-400 mb-1" for="jobTitle">Job Title</label>
-            <input type="text" id="jobTitle" placeholder="Lead Engineer / Managing Partner" class="w-full bg-lunar-950 border border-lunar-700/80 rounded-xl px-3 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-cyan-400">
-          </div>
-
-          <div>
-            <label class="block text-xs font-medium text-slate-400 mb-1" for="company">Company / Organization</label>
-            <input type="text" id="company" placeholder="Blackmoon Technologies Ltd." class="w-full bg-lunar-950 border border-lunar-700/80 rounded-xl px-3 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-cyan-400">
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs font-medium text-slate-400 mb-1" for="phoneMobile">
-                <i class="fa-solid fa-mobile-screen text-slate-500 mr-1"></i> Mobile / Direct Phone
-              </label>
-              <input type="tel" id="phoneMobile" placeholder="+1 (555) 019-2834" class="w-full bg-lunar-950 border border-lunar-700/80 rounded-xl px-3 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-cyan-400 font-mono">
-            </div>
-            <div>
-              <label class="block text-xs font-medium text-slate-400 mb-1" for="phoneWork">
-                <i class="fa-solid fa-phone text-slate-500 mr-1"></i> Office / Switchboard
-              </label>
-              <input type="tel" id="phoneWork" placeholder="+1 (555) 012-4000" class="w-full bg-lunar-950 border border-lunar-700/80 rounded-xl px-3 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-cyan-400 font-mono">
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-xs font-medium text-slate-400 mb-1" for="email">
-              <i class="fa-solid fa-envelope text-slate-500 mr-1"></i> Email Address
-            </label>
-            <input type="email" id="email" placeholder="contact@blackmoon.io" class="w-full bg-lunar-950 border border-lunar-700/80 rounded-xl px-3 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-cyan-400 font-mono">
-          </div>
-
-          <div>
-            <label class="block text-xs font-medium text-slate-400 mb-1" for="website">
-              <i class="fa-solid fa-globe text-slate-500 mr-1"></i> Website URL
-            </label>
-            <input type="text" id="website" placeholder="www.blackmoon.io" class="w-full bg-lunar-950 border border-lunar-700/80 rounded-xl px-3 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-cyan-400 font-mono">
-          </div>
-
-          <div>
-            <label class="block text-xs font-medium text-slate-400 mb-1" for="address">
-              <i class="fa-solid fa-location-dot text-slate-500 mr-1"></i> Physical Address
-            </label>
-            <textarea id="address" rows="2" placeholder="100 Mission Control Blvd&#10;Sector 4, Space Coast, FL 32920" class="w-full bg-lunar-950 border border-lunar-700/80 rounded-xl px-3 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-cyan-400"></textarea>
-          </div>
-
-          <div>
-            <label class="block text-xs font-medium text-slate-400 mb-1" for="notes">Notes / Origin Tag</label>
-            <input type="text" id="notes" placeholder="Parsed by BLACKMOON 0-1-0 // ECLIPSE" class="w-full bg-lunar-950 border border-lunar-700/80 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-cyan-400 font-mono">
-          </div>
-        </form>
-
-        <!-- Batch Workflow Buttons -->
-        <div class="pt-2 flex flex-col gap-2.5">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 font-mono">
-            <button id="btnAddToBatchAndNext" type="button" class="py-3.5 px-4 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 text-black font-extrabold text-xs tracking-wider shadow-lg shadow-cyan-500/20 active:scale-[0.98] transition flex items-center justify-center gap-2">
-              <i class="fa-solid fa-forward-step text-sm"></i>
-              <span>QUEUE &amp; SCAN NEXT</span>
-            </button>
-
-            <button id="btnAddToBatch" type="button" class="py-3.5 px-4 rounded-xl bg-lunar-850 hover:bg-lunar-800 text-slate-200 border border-lunar-700 text-xs font-semibold flex items-center justify-center gap-2 active:scale-98 transition">
-              <i class="fa-solid fa-inbox text-cyan-400"></i>
-              <span>QUEUE TO DECK</span>
-            </button>
-          </div>
-
-          <!-- Single card direct download fallback -->
-          <div class="pt-1 flex items-center justify-between text-xs text-slate-400 font-mono">
-            <button id="btnDownloadSingleVcf" type="button" class="hover:text-cyan-400 transition underline underline-offset-4 flex items-center gap-1.5">
-              <i class="fa-solid fa-file-arrow-down"></i> Save Single .VCF
-            </button>
-            <span id="activeStatusPill" class="text-[11px] text-slate-500">Unqueued</span>
-          </div>
-        </div>
-      </section>
+      </div>
     </div>
 
-    <!-- VIEW 2: BATCH QUEUE & EXPORT -->
-    <div id="viewDeck" class="hidden space-y-4">
-      
-      <!-- Batch Summary Header -->
-      <section class="bg-lunar-900 border border-lunar-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-3 lunar-glow">
-        <div class="flex items-center justify-between font-mono">
-          <div>
-            <h2 class="font-bold text-slate-100 text-sm flex items-center gap-2 tracking-wider">
-              <i class="fa-solid fa-layer-group text-cyan-400"></i>
-              <span>ECLIPSE BATCH DECK</span>
-            </h2>
-            <p id="deckSummaryText" class="text-xs text-slate-400 font-sans mt-0.5">0 contacts queued for single-file dispatch</p>
-          </div>
-          <button id="btnClearDeck" type="button" class="text-xs text-rose-400 hover:text-rose-300 font-mono transition px-2.5 py-1.5 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center gap-1.5">
-            <i class="fa-solid fa-trash-can"></i> PURGE
-          </button>
+    <!-- BATCH DECK VIEW -->
+    <div class="view-panel" id="panelDeck">
+      <div class="action-panel">
+        <div class="panel-header">
+          <span class="panel-title"><i class="fa-solid fa-layer-group"></i> DISPATCH DECK</span>
+          <button class="btn-icon-tiny delete" onclick="clearDeck()"><i class="fa-solid fa-trash"></i> Empty Deck</button>
         </div>
 
-        <!-- Master Bundled Export Buttons -->
-        <div class="pt-2 flex flex-col gap-2.5 font-mono">
-          <!-- Main Action: Android/iOS Share directly to Proton Mail / Outlook -->
-          <button id="btnShareBatch" type="button" class="w-full py-4 px-4 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:opacity-95 text-black font-extrabold text-xs tracking-wider shadow-lg shadow-emerald-500/20 active:scale-[0.98] transition flex items-center justify-center gap-2.5">
-            <i class="fa-solid fa-paper-plane text-sm"></i>
-            <span>DISPATCH MULTI-CARD BUNDLE (SHARE / PROTON / OUTLOOK)</span>
-          </button>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px; font-family: var(--font-mono);">
+          Exports each card as its own individual .vcf file attached to a single email draft.
+        </p>
 
-          <button id="btnDownloadBatchVcf" type="button" class="w-full py-3 px-3 rounded-xl bg-lunar-850 hover:bg-lunar-800 text-slate-200 border border-lunar-700 text-xs font-semibold flex items-center justify-center gap-2 active:scale-95 transition">
-            <i class="fa-solid fa-file-lines text-cyan-400"></i>
-            <span>DOWNLOAD BUNDLED MASTER .VCF</span>
-          </button>
-        </div>
-      </section>
+        <button class="btn-deck-share" onclick="shareMultiVcfBatch()">
+          <i class="fa-solid fa-paper-plane"></i> EMAIL ALL INDIVIDUAL .VCFs
+        </button>
+        <button class="btn-deck-download-all" onclick="downloadAllSeparateVcfs()">
+          <i class="fa-solid fa-file-arrow-down"></i> Download All as Individual Files
+        </button>
+      </div>
 
-      <!-- Queued Cards List -->
-      <section class="space-y-2">
-        <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400 px-1 font-mono">Queued Cards</h3>
-        <div id="deckListContainer" class="space-y-2 font-mono">
-          <!-- Populated by JavaScript -->
-          <div id="emptyDeckPlaceholder" class="p-8 text-center bg-lunar-900/40 rounded-2xl border border-dashed border-lunar-800 text-slate-500 text-xs space-y-2 font-sans">
-            <i class="fa-regular fa-address-book text-3xl text-lunar-700"></i>
-            <p>No cards in ECLIPSE queue.</p>
-            <p class="text-slate-400">Switch to the "CAPTURE &amp; PARSE" tab to begin scanning.</p>
-          </div>
-        </div>
-      </section>
+      <div id="deckListContainer"></div>
     </div>
-
   </main>
 
-  <!-- Deployment & GitHub Help Modal -->
-  <div id="pwaModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-4 hidden">
-    <div class="bg-lunar-900 border border-lunar-800 rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl relative">
-      <button id="closeModalBtn" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-lunar-800 text-slate-400 flex items-center justify-center hover:text-white">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
+  <div class="toast" id="toastBox">Message</div>
 
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-xl border border-cyan-400/30">
-          <i class="fa-solid fa-satellite-dish"></i>
-        </div>
-        <div>
-          <h3 class="font-bold text-white text-sm font-mono tracking-wide">BLACKMOON // HOSTING</h3>
-          <p class="text-xs text-slate-400">GitHub Pages Autonomous Deployment</p>
-        </div>
-      </div>
-
-      <div class="space-y-2.5 text-xs text-slate-300">
-        <div class="flex items-start gap-3 bg-lunar-950 p-3 rounded-xl border border-lunar-800">
-          <span class="w-6 h-6 rounded bg-cyan-600/30 text-cyan-400 flex items-center justify-center text-xs font-bold font-mono flex-shrink-0">1</span>
-          <p>Create repository <strong class="text-white font-mono">eclipse</strong> on GitHub (Public with README).</p>
-        </div>
-        <div class="flex items-start gap-3 bg-lunar-950 p-3 rounded-xl border border-lunar-800">
-          <span class="w-6 h-6 rounded bg-cyan-600/30 text-cyan-400 flex items-center justify-center text-xs font-bold font-mono flex-shrink-0">2</span>
-          <p>Upload this file as <strong class="text-white font-mono">index.html</strong> into root and commit.</p>
-        </div>
-        <div class="flex items-start gap-3 bg-lunar-950 p-3 rounded-xl border border-lunar-800">
-          <span class="w-6 h-6 rounded bg-cyan-600/30 text-cyan-400 flex items-center justify-center text-xs font-bold font-mono flex-shrink-0">3</span>
-          <p>In Repo Settings &rarr; Pages, select <strong class="text-white font-mono">main branch / root</strong> &amp; Save.</p>
-        </div>
-        <div class="flex items-start gap-3 bg-lunar-950 p-3 rounded-xl border border-lunar-800">
-          <span class="w-6 h-6 rounded bg-cyan-600/30 text-cyan-400 flex items-center justify-center text-xs font-bold font-mono flex-shrink-0">4</span>
-          <p>Visit link on Android/iPhone &rarr; tap <strong class="text-white">Add to Home Screen</strong>.</p>
-        </div>
-      </div>
-
-      <button id="btnDismissModal" class="w-full py-3 rounded-xl bg-cyan-500 text-black font-mono font-bold text-xs active:scale-95 transition">
-        CONFIRM &amp; DISMISS
-      </button>
-    </div>
-  </div>
-
-  <!-- Toast Notification Message Box -->
-  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-full bg-lunar-850 border border-lunar-700 text-white text-xs font-mono shadow-2xl flex items-center gap-2 transition-all duration-300 opacity-0 pointer-events-none translate-y-4">
-    <i id="toastIcon" class="fa-solid fa-check text-cyan-400"></i>
-    <span id="toastMsg">Success</span>
-  </div>
-
-  <!-- Application Logic -->
   <script>
-    // State
-    const STORAGE_KEY = 'blackmoon_eclipse_batch_deck';
-    let cardDeck = [];
+    let deck = JSON.parse(localStorage.getItem('eclipse_deck') || '[]');
+    updateDeckUI();
 
-    // DOM Elements - Navigation & Views
-    const navScanTab = document.getElementById('navScanTab');
-    const navDeckTab = document.getElementById('navDeckTab');
-    const viewScanner = document.getElementById('viewScanner');
-    const viewDeck = document.getElementById('viewDeck');
-    const deckBadge = document.getElementById('deckBadge');
-    const batchCountHint = document.getElementById('batchCountHint');
-    const deckSummaryText = document.getElementById('deckSummaryText');
-    const deckListContainer = document.getElementById('deckListContainer');
-    const emptyDeckPlaceholder = document.getElementById('emptyDeckPlaceholder');
+    function switchTab(target) {
+      document.getElementById('panelScan').classList.toggle('active', target === 'scan');
+      document.getElementById('panelDeck').classList.toggle('active', target === 'deck');
+      document.getElementById('tabScan').classList.toggle('active', target === 'scan');
+      document.getElementById('tabDeck').classList.toggle('active', target === 'deck');
+    }
 
-    // Capture & OCR Elements
-    const btnCamera = document.getElementById('btnCamera');
-    const btnGallery = document.getElementById('btnGallery');
+    function showToast(text) {
+      const toast = document.getElementById('toastBox');
+      toast.innerText = text;
+      toast.style.display = 'block';
+      setTimeout(() => toast.style.display = 'none', 3000);
+    }
+
+    // CAMERA & OCR PIPELINE
     const cameraInput = document.getElementById('cameraInput');
-    const galleryInput = document.getElementById('galleryInput');
-    const previewContainer = document.getElementById('imagePreviewContainer');
-    const previewImg = document.getElementById('previewImg');
-    const scanFileName = document.getElementById('scanFileName');
-    const ocrStatusText = document.getElementById('ocrStatusText');
-    const ocrProgressBar = document.getElementById('ocrProgressBar');
-    const rawOcrSection = document.getElementById('rawOcrSection');
-    const toggleRawOcrBtn = document.getElementById('toggleRawOcrBtn');
-    const rawOcrContent = document.getElementById('rawOcrContent');
-    const rawOcrIcon = document.getElementById('rawOcrIcon');
-
-    // Form fields
-    const fFirstName = document.getElementById('firstName');
-    const fLastName = document.getElementById('lastName');
-    const fJobTitle = document.getElementById('jobTitle');
-    const fCompany = document.getElementById('company');
-    const fPhoneMobile = document.getElementById('phoneMobile');
-    const fPhoneWork = document.getElementById('phoneWork');
-    const fEmail = document.getElementById('email');
-    const fWebsite = document.getElementById('website');
-    const fAddress = document.getElementById('address');
-    const fNotes = document.getElementById('notes');
-
-    // Action buttons
-    const btnAddToBatchAndNext = document.getElementById('btnAddToBatchAndNext');
-    const btnAddToBatch = document.getElementById('btnAddToBatch');
-    const btnDownloadSingleVcf = document.getElementById('btnDownloadSingleVcf');
-    const btnClear = document.getElementById('btnClear');
-    const btnClearDeck = document.getElementById('btnClearDeck');
-    const btnShareBatch = document.getElementById('btnShareBatch');
-    const btnDownloadBatchVcf = document.getElementById('btnDownloadBatchVcf');
-
-    // Modal elements
-    const pwaHelpBtn = document.getElementById('pwaHelpBtn');
-    const pwaModal = document.getElementById('pwaModal');
-    const closeModalBtn = document.getElementById('closeModalBtn');
-    const btnDismissModal = document.getElementById('btnDismissModal');
-
-    // Toast Notification Utility
-    let toastTimeout = null;
-    function showToast(message, type = 'success') {
-      const toast = document.getElementById('toast');
-      const toastMsg = document.getElementById('toastMsg');
-      const toastIcon = document.getElementById('toastIcon');
-
-      toastMsg.textContent = message;
-      if (type === 'error') {
-        toastIcon.className = 'fa-solid fa-triangle-exclamation text-rose-400';
-      } else if (type === 'info') {
-        toastIcon.className = 'fa-solid fa-circle-info text-cyan-400';
-      } else {
-        toastIcon.className = 'fa-solid fa-circle-check text-emerald-400';
-      }
-
-      toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4');
-      toast.classList.add('opacity-100', 'translate-y-0');
-
-      if (toastTimeout) clearTimeout(toastTimeout);
-      toastTimeout = setTimeout(() => {
-        toast.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4');
-        toast.classList.remove('opacity-100', 'translate-y-0');
-      }, 3500);
-    }
-
-    // Tab Switching
-    function setTab(tab) {
-      if (tab === 'scan') {
-        viewScanner.classList.remove('hidden');
-        viewDeck.classList.add('hidden');
-        navScanTab.classList.replace('text-slate-400', 'text-black');
-        navScanTab.classList.add('bg-cyan-600', 'shadow-md');
-        navDeckTab.classList.remove('bg-cyan-600', 'text-black', 'shadow-md');
-        navDeckTab.classList.add('text-slate-400');
-      } else {
-        viewScanner.classList.add('hidden');
-        viewDeck.classList.remove('hidden');
-        navDeckTab.classList.replace('text-slate-400', 'text-black');
-        navDeckTab.classList.add('bg-cyan-600', 'shadow-md');
-        navScanTab.classList.remove('bg-cyan-600', 'text-black', 'shadow-md');
-        navScanTab.classList.add('text-slate-400');
-        renderDeck();
-      }
-    }
-
-    navScanTab.addEventListener('click', () => setTab('scan'));
-    navDeckTab.addEventListener('click', () => setTab('deck'));
-
-    // Modal Events
-    pwaHelpBtn.addEventListener('click', () => pwaModal.classList.remove('hidden'));
-    closeModalBtn.addEventListener('click', () => pwaModal.classList.add('hidden'));
-    btnDismissModal.addEventListener('click', () => pwaModal.classList.add('hidden'));
-    pwaModal.addEventListener('click', (e) => {
-      if (e.target === pwaModal) pwaModal.classList.add('hidden');
-    });
-
-    // File Input Handlers
-    btnCamera.addEventListener('click', () => cameraInput.click());
-    btnGallery.addEventListener('click', () => galleryInput.click());
-    cameraInput.addEventListener('change', handleFileSelection);
-    galleryInput.addEventListener('change', handleFileSelection);
-
-    // Toggle Raw OCR
-    toggleRawOcrBtn.addEventListener('click', () => {
-      const isHidden = rawOcrContent.classList.contains('hidden');
-      if (isHidden) {
-        rawOcrContent.classList.remove('hidden');
-        rawOcrIcon.classList.replace('fa-chevron-down', 'fa-chevron-up');
-      } else {
-        rawOcrContent.classList.add('hidden');
-        rawOcrIcon.classList.replace('fa-chevron-up', 'fa-chevron-down');
-      }
-    });
-
-    // Clear Active Form
-    function resetActiveForm(notify = false) {
-      fFirstName.value = '';
-      fLastName.value = '';
-      fJobTitle.value = '';
-      fCompany.value = '';
-      fPhoneMobile.value = '';
-      fPhoneWork.value = '';
-      fEmail.value = '';
-      fWebsite.value = '';
-      fAddress.value = '';
-      fNotes.value = '';
-      previewContainer.classList.add('hidden');
-      rawOcrSection.classList.add('hidden');
-      rawOcrContent.textContent = '';
-      document.getElementById('activeStatusPill').textContent = 'Unqueued';
-      if (notify) showToast('Active contact buffer reset', 'info');
-    }
-    btnClear.addEventListener('click', () => resetActiveForm(true));
-
-    // Handle File Pick
-    function handleFileSelection(e) {
-      const file = e.target.files && e.target.files[0];
+    cameraInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
       if (!file) return;
 
-      scanFileName.textContent = file.name;
-      previewContainer.classList.remove('hidden');
-      ocrProgressBar.style.width = '10%';
-      ocrStatusText.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Reading buffer...';
+      const ocrBox = document.getElementById('ocrBox');
+      const ocrProgress = document.getElementById('ocrProgress');
+      const ocrMessage = document.getElementById('ocrMessage');
+      ocrBox.style.display = 'block';
 
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        previewImg.src = evt.target.result;
-        runTesseractOcr(evt.target.result);
-      };
-      reader.readAsDataURL(file);
-      e.target.value = '';
-    }
-
-    // Run Tesseract OCR client-side
-    async function runTesseractOcr(imageDataUrl) {
       try {
-        ocrProgressBar.style.width = '25%';
-        ocrStatusText.innerHTML = '<i class="fa-solid fa-microchip fa-spin"></i> Initializing OCR engine...';
-
-        const worker = await Tesseract.createWorker({
-          logger: m => {
-            if (m.status === 'recognizing text') {
-              const progress = Math.round((m.progress || 0) * 100);
-              ocrProgressBar.style.width = `${Math.min(95, 25 + progress * 0.7)}%`;
-              ocrStatusText.innerHTML = `<i class="fa-solid fa-crosshairs fa-spin"></i> ECLIPSE Parsing: ${progress}%`;
-            }
-          }
-        });
-
-        await worker.loadLanguage('eng');
-        await worker.initialize('eng');
-        await worker.setParameters({
-          tessedit_pageseg_mode: Tesseract.PSM.AUTO,
-        });
-
-        const { data: { text } } = await worker.recognize(imageDataUrl);
+        const worker = await Tesseract.createWorker('eng');
+        const ret = await worker.recognize(file);
+        parseRawText(ret.data.text);
         await worker.terminate();
-
-        ocrProgressBar.style.width = '100%';
-        ocrStatusText.innerHTML = '<i class="fa-solid fa-check text-cyan-400"></i> Parsing complete';
-        
-        rawOcrContent.textContent = text;
-        rawOcrSection.classList.remove('hidden');
-
-        parseCardText(text);
-        document.getElementById('activeStatusPill').textContent = 'Ready to queue';
-        showToast('Card parsed into buffer.');
+        ocrBox.style.display = 'none';
+        showToast("Card Read Successfully");
       } catch (err) {
-        console.error('OCR Error:', err);
-        ocrStatusText.innerHTML = '<i class="fa-solid fa-circle-exclamation text-rose-400"></i> Parse fault';
-        showToast('OCR failed. Check angle or contrast.', 'error');
+        ocrMessage.innerText = "OCR Failed. Please fill fields manually.";
+        setTimeout(() => ocrBox.style.display = 'none', 2500);
       }
-    }
+    });
 
-    // Heuristics & Regex Parser
-    function parseCardText(rawText) {
-      if (!rawText) return;
+    function parseRawText(raw) {
+      const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+      
+      const emailRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/i;
+      const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+|[a-zA-Z0-9.-]+\.(?:com|org|net|gov|edu|io|us))/i;
+      const phoneRegex = /(?:\+?1[-.\s]?)?(?:\(?\d{3}\)?[-.\s]?)?\d{3}[-.\s]?\d{4}/g;
 
-      const lines = rawText
-        .split('\n')
-        .map(l => l.trim())
-        .filter(l => l.length > 0);
+      let email = '', web = '', phones = [];
 
-      let foundEmail = '';
-      let foundWebsite = '';
-      let foundPhones = [];
-      let addressParts = [];
-      let candidateNames = [];
-      let candidateTitles = [];
-      let candidateCompanies = [];
+      lines.forEach(line => {
+        const eMatch = line.match(emailRegex);
+        if (eMatch && !email) email = eMatch[0];
+        const uMatch = line.match(urlRegex);
+        if (uMatch && !web && !uMatch[0].includes('@')) web = uMatch[0];
+        const pMatch = line.match(phoneRegex);
+        if (pMatch) phones.push(...pMatch);
+      });
 
-      const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i;
-      const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+|[a-zA-Z0-9.-]+\.(com|org|net|io|co|biz|info|us|ca|gov|edu)[^\s]*)/i;
+      if (email) document.getElementById('email').value = email;
+      if (web) document.getElementById('web').value = web;
+      if (phones.length > 0) document.getElementById('mobile').value = phones[0];
+      if (phones.length > 1) document.getElementById('workPhone').value = phones[1];
 
-      const titleKeywords = [
-        'ceo', 'cto', 'cfo', 'coo', 'president', 'vice president', 'vp', 'director', 
-        'manager', 'engineer', 'developer', 'consultant', 'founder', 'co-founder', 
-        'partner', 'associate', 'attorney', 'representative', 'specialist', 'officer',
-        'supervisor', 'realtor', 'broker', 'lead', 'coordinator', 'head', 'general counsel'
-      ];
-
-      const companySuffixes = [
-        'inc', 'inc.', 'llc', 'corp', 'corp.', 'corporation', 'ltd', 'ltd.', 
-        'company', 'co', 'co.', 'group', 'services', 'solutions', 'technologies', 'holdings'
-      ];
-
-      const addressKeywords = [
-        'street', 'st', 'st.', 'avenue', 'ave', 'ave.', 'road', 'rd', 'rd.',
-        'boulevard', 'blvd', 'suite', 'ste', 'ste.', 'floor', 'fl', 'box', 'p.o.',
-        'drive', 'dr', 'way', 'lane', 'ln', 'highway', 'hwy', 'parkway', 'pkwy'
-      ];
-
-      const stateZipRegex = /\b([A-Z]{2})\s+(\d{5}(?:-\d{4})?)\b/;
-      const unusedLines = [];
-
-      for (let line of lines) {
-        let lineHandled = false;
-
-        // Email
-        if (!foundEmail) {
-          const emailMatch = line.match(emailRegex);
-          if (emailMatch) {
-            foundEmail = emailMatch[0];
-            lineHandled = true;
-          }
-        }
-
-        // Website
-        if (!foundWebsite) {
-          const urlMatch = line.match(urlRegex);
-          if (urlMatch && (!foundEmail || !urlMatch[0].includes('@'))) {
-            let site = urlMatch[0].replace(/[.,;)]$/, '');
-            foundWebsite = site;
-            lineHandled = true;
-          }
-        }
-
-        // Phone
-        const cleanDigits = line.replace(/\D/g, '');
-        if (cleanDigits.length >= 7 && cleanDigits.length <= 15) {
-          const isMobile = /mobile|cell|m\b|dir|direct/i.test(line);
-          const isFax = /fax|f\b/i.test(line);
-          if (!isFax) {
-            const cleanPhone = line.replace(/^(tel|phone|p|m|c|o|w|office|cell|mobile|direct)[:\s.-]+/i, '').trim();
-            foundPhones.push({ text: cleanPhone, isMobile });
-            lineHandled = true;
-          }
-        }
-
-        // Address
-        const lower = line.toLowerCase();
-        const hasAddressWord = addressKeywords.some(kw => new RegExp(`\\b${kw}\\b`, 'i').test(lower));
-        const hasZip = stateZipRegex.test(line);
-        if (hasAddressWord || hasZip) {
-          addressParts.push(line);
-          lineHandled = true;
-        }
-
-        if (!lineHandled) unusedLines.push(line);
-      }
-
-      // Check remaining lines
-      for (let line of unusedLines) {
-        const lower = line.toLowerCase();
-        const isTitle = titleKeywords.some(kw => new RegExp(`\\b${kw}\\b`, 'i').test(lower));
-        if (isTitle && candidateTitles.length === 0) {
-          candidateTitles.push(line);
-          continue;
-        }
-
-        const isCompany = companySuffixes.some(kw => new RegExp(`\\b${kw}\\b`, 'i').test(lower));
-        if (isCompany && candidateCompanies.length === 0) {
-          candidateCompanies.push(line);
-          continue;
-        }
-
-        const isLikelyName = /^[A-Z][a-z]+(\s+[A-Z][a-z]+){1,2}$/.test(line);
-        if (isLikelyName && candidateNames.length === 0) {
-          candidateNames.push(line);
-          continue;
-        }
-
-        if (!/^[0-9+@:/.-]+$/.test(line) && line.split(' ').length <= 4) {
-          if (candidateNames.length === 0) candidateNames.push(line);
-          else if (candidateCompanies.length === 0) candidateCompanies.push(line);
-        }
-      }
-
-      // Populate Inputs
-      if (candidateNames.length > 0) {
-        const parts = candidateNames[0].trim().split(/\s+/);
-        if (parts.length === 1) {
-          fFirstName.value = parts[0];
-          fLastName.value = '';
-        } else if (parts.length === 2) {
-          fFirstName.value = parts[0];
-          fLastName.value = parts[1];
+      // Clean lines for names and titles
+      const cleanLines = lines.filter(l => !l.match(emailRegex) && !l.match(urlRegex) && !l.match(phoneRegex));
+      if (cleanLines.length > 0) {
+        const nameParts = cleanLines[0].replace(/[^a-zA-Z\s]/g, '').trim().split(/\s+/);
+        if (nameParts.length >= 2) {
+          document.getElementById('fn').value = nameParts[0];
+          document.getElementById('ln').value = nameParts.slice(1).join(' ');
         } else {
-          fFirstName.value = parts.slice(0, parts.length - 1).join(' ');
-          fLastName.value = parts[parts.length - 1];
+          document.getElementById('fn').value = nameParts[0] || '';
         }
       }
-
-      if (candidateTitles.length > 0) fJobTitle.value = candidateTitles[0];
-      if (candidateCompanies.length > 0) fCompany.value = candidateCompanies[0];
-      if (foundEmail) fEmail.value = foundEmail;
-      if (foundWebsite) fWebsite.value = foundWebsite;
-
-      if (foundPhones.length > 0) {
-        const mob = foundPhones.find(p => p.isMobile);
-        if (mob) {
-          fPhoneMobile.value = mob.text;
-          const other = foundPhones.find(p => p !== mob);
-          if (other) fPhoneWork.value = other.text;
-        } else {
-          fPhoneMobile.value = foundPhones[0].text;
-          if (foundPhones.length > 1) fPhoneWork.value = foundPhones[1].text;
-        }
-      }
-
-      if (addressParts.length > 0) {
-        fAddress.value = addressParts.join('\n');
-      }
-
-      fNotes.value = 'BLACKMOON 0-1-0 // ECLIPSE Card Scan';
+      if (cleanLines.length > 1) document.getElementById('title').value = cleanLines[1];
+      if (cleanLines.length > 2) document.getElementById('company').value = cleanLines[2];
     }
 
-    // Convert Contact Object to RFC 2426 vCard String
-    function contactToVCard(c) {
-      const first = (c.firstName || '').trim();
-      const last = (c.lastName || '').trim();
-      const comp = (c.company || '').trim();
-      const fullName = [first, last].filter(Boolean).join(' ') || comp || 'New Contact';
-
-      let vcard = [
-        'BEGIN:VCARD',
-        'VERSION:3.0',
-        `N:${last};${first};;;`,
-        `FN:${fullName}`
-      ];
-
-      if (comp) vcard.push(`ORG:${comp}`);
-      if (c.jobTitle) vcard.push(`TITLE:${c.jobTitle.trim()}`);
-      if (c.phoneMobile) vcard.push(`TEL;TYPE=CELL,VOICE:${c.phoneMobile.trim()}`);
-      if (c.phoneWork) vcard.push(`TEL;TYPE=WORK,VOICE:${c.phoneWork.trim()}`);
-      if (c.email) vcard.push(`EMAIL;TYPE=PREF,INTERNET:${c.email.trim()}`);
-      if (c.website) {
-        let site = c.website.trim();
-        if (!/^https?:\/\//i.test(site)) site = 'https://' + site;
-        vcard.push(`URL:${site}`);
-      }
-      if (c.address) {
-        const addrFormatted = c.address.replace(/\n/g, ', ').trim();
-        vcard.push(`ADR;TYPE=WORK:;;${addrFormatted};;;;`);
-      }
-      if (c.notes) vcard.push(`NOTE:${c.notes.trim()}`);
-
-      vcard.push('REV:' + new Date().toISOString());
-      vcard.push('END:VCARD');
-
-      return vcard.join('\r\n');
-    }
-
-    // Build Master Multi-Contact VCF String
-    function generateMasterVCardString(contacts) {
-      return contacts.map(c => contactToVCard(c)).join('\r\n\r\n');
-    }
-
-    // Active Card Data Object Helper
-    function getActiveFormData() {
-      const first = (fFirstName.value || '').trim();
-      const last = (fLastName.value || '').trim();
-      const comp = (fCompany.value || '').trim();
-
-      if (!first && !last && !comp && !fEmail.value && !fPhoneMobile.value) {
-        return null;
-      }
-
+    function getActiveCard() {
       return {
-        id: 'card_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
-        firstName: first,
-        lastName: last,
-        jobTitle: (fJobTitle.value || '').trim(),
-        company: comp,
-        phoneMobile: (fPhoneMobile.value || '').trim(),
-        phoneWork: (fPhoneWork.value || '').trim(),
-        email: (fEmail.value || '').trim(),
-        website: (fWebsite.value || '').trim(),
-        address: (fAddress.value || '').trim(),
-        notes: (fNotes.value || '').trim(),
-        addedAt: new Date().toISOString()
+        id: Date.now().toString(),
+        fn: document.getElementById('fn').value.trim(),
+        ln: document.getElementById('ln').value.trim(),
+        company: document.getElementById('company').value.trim(),
+        title: document.getElementById('title').value.trim(),
+        mobile: document.getElementById('mobile').value.trim(),
+        workPhone: document.getElementById('workPhone').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        web: document.getElementById('web').value.trim(),
+        address: document.getElementById('address').value.trim()
       };
     }
 
-    // Storage Management
-    function loadDeck() {
-      try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        cardDeck = saved ? JSON.parse(saved) : [];
-      } catch (e) {
-        console.error('Failed to load card deck:', e);
-        cardDeck = [];
-      }
-      updateDeckUI();
+    function generateVCardString(c) {
+      const fullName = (c.fn + " " + c.ln).trim() || "Contact";
+      let vcf = "BEGIN:VCARD\r\nVERSION:3.0\r\n";
+      vcf += `FN:${fullName}\r\n`;
+      vcf += `N:${c.ln};${c.fn};;;\r\n`;
+      if (c.company) vcf += `ORG:${c.company}\r\n`;
+      if (c.title) vcf += `TITLE:${c.title}\r\n`;
+      if (c.mobile) vcf += `TEL;TYPE=CELL,VOICE:${c.mobile}\r\n`;
+      if (c.workPhone) vcf += `TEL;TYPE=WORK,VOICE:${c.workPhone}\r\n`;
+      if (c.email) vcf += `EMAIL;TYPE=PREF,INTERNET:${c.email}\r\n`;
+      if (c.web) vcf += `URL:${c.web}\r\n`;
+      if (c.address) vcf += `ADR;TYPE=WORK:;;${c.address};;;;\r\n`;
+      vcf += "END:VCARD\r\n";
+      return vcf;
     }
 
-    function saveDeck() {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(cardDeck));
-      } catch (e) {
-        console.error('Failed to save card deck:', e);
+    function queueAndScanNext() {
+      const card = getActiveCard();
+      if (!card.fn && !card.ln && !card.company && !card.email) {
+        showToast("Enter contact info before queuing");
+        return;
       }
+      deck.push(card);
+      localStorage.setItem('eclipse_deck', JSON.stringify(deck));
       updateDeckUI();
+      resetActiveForm();
+      showToast("Card Queued in Deck");
+      document.getElementById('cameraInput').click();
+    }
+
+    function resetActiveForm() {
+      ['fn', 'ln', 'company', 'title', 'mobile', 'workPhone', 'email', 'web', 'address'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
     }
 
     function updateDeckUI() {
-      const count = cardDeck.length;
-      deckBadge.textContent = count;
-      batchCountHint.textContent = `${count} in queue`;
-      deckSummaryText.textContent = `${count} contact${count === 1 ? '' : 's'} staged for single-bundle dispatch`;
+      document.getElementById('deckBadge').innerText = deck.length;
+      document.getElementById('deckQuickCount').innerText = `${deck.length} in deck`;
+      const container = document.getElementById('deckListContainer');
+
+      if (deck.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; color: var(--text-muted); padding: 30px; font-family: var(--font-mono); font-size: 0.8rem;">
+            [ DECK EMPTY - SNAP CARDS TO FILL ]
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = deck.map((c, i) => `
+        <div class="deck-item">
+          <div>
+            <div class="deck-info-name">${c.fn || ''} ${c.ln || 'Unnamed'}</div>
+            <div class="deck-info-meta">${c.company || 'No Organization'} • ${c.mobile || c.email || 'No Direct Contact'}</div>
+          </div>
+          <div class="deck-item-actions">
+            <button class="btn-icon-tiny" onclick="editDeckItem(${i})" title="Edit"><i class="fa-solid fa-pen"></i></button>
+            <button class="btn-icon-tiny delete" onclick="deleteDeckItem(${i})" title="Delete"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        </div>
+      `).join('');
     }
 
-    // Render Deck Tab Items
-    function renderDeck() {
+    function deleteDeckItem(index) {
+      deck.splice(index, 1);
+      localStorage.setItem('eclipse_deck', JSON.stringify(deck));
       updateDeckUI();
-      deckListContainer.innerHTML = '';
+    }
 
-      if (cardDeck.length === 0) {
-        deckListContainer.appendChild(emptyDeckPlaceholder);
-        return;
-      }
-
-      cardDeck.forEach((card, index) => {
-        const fullName = [card.firstName, card.lastName].filter(Boolean).join(' ') || card.company || 'Unnamed Contact';
-        const initials = ((card.firstName ? card.firstName[0] : '') + (card.lastName ? card.lastName[0] : '')) || (card.company ? card.company[0] : '?');
-
-        const cardItem = document.createElement('div');
-        cardItem.className = 'bg-lunar-900 border border-lunar-800 rounded-xl p-3 flex items-center justify-between gap-3 shadow-md hover:border-lunar-700 transition';
-        cardItem.innerHTML = `
-          <div class="flex items-center gap-3 min-w-0">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600/30 to-blue-600/30 border border-cyan-500/40 text-cyan-300 font-bold flex items-center justify-center flex-shrink-0 text-xs font-mono">
-              ${initials.toUpperCase()}
-            </div>
-            <div class="min-w-0">
-              <h4 class="font-bold text-white text-xs truncate font-mono">${fullName}</h4>
-              <p class="text-[11px] text-slate-400 truncate">${card.jobTitle ? card.jobTitle + (card.company ? ' • ' + card.company : '') : (card.company || 'No company listed')}</p>
-              <div class="flex items-center gap-2 text-[10px] text-slate-500 mt-0.5 font-mono">
-                ${card.email ? `<span class="truncate text-cyan-300/80"><i class="fa-solid fa-envelope mr-0.5 text-slate-400"></i> ${card.email}</span>` : ''}
-                ${card.phoneMobile ? `<span><i class="fa-solid fa-phone mr-0.5 text-slate-400"></i> ${card.phoneMobile}</span>` : ''}
-              </div>
-            </div>
-          </div>
-          <div class="flex items-center gap-1.5 flex-shrink-0">
-            <button data-action="load" data-index="${index}" title="Edit in scanner" class="w-8 h-8 rounded-lg bg-lunar-850 hover:bg-lunar-800 text-slate-300 border border-lunar-700 flex items-center justify-center text-xs transition">
-              <i class="fa-solid fa-pen"></i>
-            </button>
-            <button data-action="delete" data-index="${index}" title="Purge card" class="w-8 h-8 rounded-lg bg-lunar-850 hover:bg-rose-900/40 text-slate-400 hover:text-rose-400 border border-lunar-700 flex items-center justify-center text-xs transition">
-              <i class="fa-solid fa-trash"></i>
-            </button>
-          </div>
-        `;
-        deckListContainer.appendChild(cardItem);
+    function editDeckItem(index) {
+      const c = deck[index];
+      ['fn', 'ln', 'company', 'title', 'mobile', 'workPhone', 'email', 'web', 'address'].forEach(id => {
+        document.getElementById(id).value = c[id] || '';
       });
+      deleteDeckItem(index);
+      switchTab('scan');
+    }
 
-      // Delegate item buttons
-      deckListContainer.querySelectorAll('button[data-action="delete"]').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const idx = parseInt(btn.getAttribute('data-index'), 10);
-          cardDeck.splice(idx, 1);
-          saveDeck();
-          renderDeck();
-          showToast('Card removed from queue', 'info');
-        });
-      });
+    function clearDeck() {
+      if (!confirm("Clear all cards from the deck?")) return;
+      deck = [];
+      localStorage.setItem('eclipse_deck', JSON.stringify(deck));
+      updateDeckUI();
+      showToast("Deck Emptied");
+    }
 
-      deckListContainer.querySelectorAll('button[data-action="load"]').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const idx = parseInt(btn.getAttribute('data-index'), 10);
-          const c = cardDeck[idx];
-          fFirstName.value = c.firstName || '';
-          fLastName.value = c.lastName || '';
-          fJobTitle.value = c.jobTitle || '';
-          fCompany.value = c.company || '';
-          fPhoneMobile.value = c.phoneMobile || '';
-          fPhoneWork.value = c.phoneWork || '';
-          fEmail.value = c.email || '';
-          fWebsite.value = c.website || '';
-          fAddress.value = c.address || '';
-          fNotes.value = c.notes || '';
-          document.getElementById('activeStatusPill').textContent = 'Editing queued card';
-          setTab('scan');
-          showToast(`Staged ${c.firstName || c.company || 'contact'} in editor`, 'info');
-        });
+    // MULTI-VCF GENERATION & NATIVE SHARE ATTACHMENT
+    function createVcfFilesArray() {
+      return deck.map(card => {
+        const vcfText = generateVCardString(card);
+        const rawName = `${card.fn || ''}_${card.ln || ''}`.trim() || card.company || "Contact";
+        const cleanName = rawName.replace(/[^a-zA-Z0-9_-]/g, '_');
+        return new File([vcfText], `${cleanName}.vcf`, { type: 'text/vcard' });
       });
     }
 
-    // Add Active Card To Batch
-    function addCurrentCardToBatch(thenScanNext = false) {
-      const data = getActiveFormData();
-      if (!data) {
-        showToast('Specify at least a name, company, or email', 'info');
+    async function shareMultiVcfBatch() {
+      if (deck.length === 0) {
+        showToast("Deck is empty");
         return;
       }
 
-      cardDeck.push(data);
-      saveDeck();
+      const files = createVcfFilesArray();
 
-      const name = [data.firstName, data.lastName].filter(Boolean).join(' ') || data.company || 'Contact';
-      showToast(`Staged ${name} into ECLIPSE deck!`);
-
-      resetActiveForm(false);
-
-      if (thenScanNext) {
-        setTimeout(() => {
-          cameraInput.click();
-        }, 300);
-      }
-    }
-
-    btnAddToBatch.addEventListener('click', () => addCurrentCardToBatch(false));
-    btnAddToBatchAndNext.addEventListener('click', () => addCurrentCardToBatch(true));
-
-    // Clear entire deck
-    btnClearDeck.addEventListener('click', () => {
-      if (cardDeck.length === 0) return;
-      cardDeck = [];
-      saveDeck();
-      renderDeck();
-      showToast('Deck purged', 'info');
-    });
-
-    // Single card direct download
-    btnDownloadSingleVcf.addEventListener('click', () => {
-      const data = getActiveFormData();
-      if (!data) {
-        showToast('Active buffer is empty', 'info');
-        return;
-      }
-      const vcardContent = contactToVCard(data);
-      const safeName = [data.firstName, data.lastName].filter(Boolean).join('_') || (data.company ? data.company.replace(/[^a-zA-Z0-9]/g, '_') : 'Contact');
-      downloadVcfFile(vcardContent, `${safeName}.vcf`);
-    });
-
-    // Master Batch File Helper
-    function getBatchVcfBlob() {
-      if (cardDeck.length === 0) return null;
-      const content = generateMasterVCardString(cardDeck);
-      const today = new Date().toISOString().slice(0, 10);
-      const filename = `BLACKMOON_ECLIPSE_${today}_${cardDeck.length}-cards.vcf`;
-      const blob = new Blob([content], { type: 'text/vcard;charset=utf-8;' });
-      return { blob, filename, content };
-    }
-
-    function downloadVcfFile(contentString, filename) {
-      const blob = new Blob([contentString], { type: 'text/vcard;charset=utf-8;' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.setAttribute('download', filename);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(link.href);
-      showToast(`Saved ${filename}!`);
-    }
-
-    // Download Master Bundled VCF
-    btnDownloadBatchVcf.addEventListener('click', () => {
-      const bundle = getBatchVcfBlob();
-      if (!bundle) {
-        showToast('Queue is empty! Scan cards first.', 'info');
-        return;
-      }
-      downloadVcfFile(bundle.content, bundle.filename);
-    });
-
-    // Native Android Web Share API: Hands single bundled .vcf directly to Proton Mail / Outlook
-    btnShareBatch.addEventListener('click', async () => {
-      const bundle = getBatchVcfBlob();
-      if (!bundle) {
-        showToast('Queue is empty! Scan cards first.', 'info');
-        return;
-      }
-
-      const file = new File([bundle.blob], bundle.filename, { type: 'text/vcard' });
-      
-      // Test if native file sharing is available
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      if (navigator.canShare && navigator.canShare({ files: files })) {
         try {
           await navigator.share({
-            title: `BLACKMOON ECLIPSE Contacts (${cardDeck.length} cards)`,
-            text: `Attached is an RFC-compliant multi-contact vCard bundle containing ${cardDeck.length} business cards from BLACKMOON 0-1-0 // ECLIPSE.`,
-            files: [file]
+            files: files,
+            title: `Batch Contacts (${deck.length} cards)`,
+            text: `Attached are ${deck.length} contact cards exported from BLACKMOON ECLIPSE.`
           });
-          showToast('Batch dispatched to share target!');
-          return;
+          showToast("Batch dispatched to email");
         } catch (err) {
           if (err.name !== 'AbortError') {
-            console.warn('Native file share failed:', err);
-          } else {
-            return;
+            downloadAllSeparateVcfs();
           }
         }
+      } else {
+        // Fallback for browsers with strict file share limits
+        downloadAllSeparateVcfs();
       }
+    }
 
-      // Fallback
-      downloadVcfFile(bundle.content, bundle.filename);
-      showToast('Downloaded master bundle. Tap to open in email.');
-    });
+    function downloadAllSeparateVcfs() {
+      if (deck.length === 0) {
+        showToast("Deck is empty");
+        return;
+      }
+      const files = createVcfFilesArray();
+      files.forEach((file, index) => {
+        setTimeout(() => {
+          const url = URL.createObjectURL(file);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = file.name;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }, index * 250); // slight stagger to ensure mobile OS registers multiple downloads
+      });
+      showToast(`Downloading ${deck.length} separate .VCF files`);
+    }
 
-    // Initial load
-    window.addEventListener('DOMContentLoaded', () => {
-      loadDeck();
-    });
+    function saveSingleCardVCF() {
+      const card = getActiveCard();
+      const text = generateVCardString(card);
+      const name = `${card.fn || ''}_${card.ln || ''}`.trim() || "Contact";
+      const blob = new Blob([text], { type: 'text/vcard' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `${name.replace(/[^a-zA-Z0-9_-]/g, '_')}.vcf`;
+      a.click();
+    }
   </script>
 </body>
 </html>
