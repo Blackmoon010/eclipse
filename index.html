@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>BLACKMOON 0-1-0 // ECLIPSE</title>
+  <meta name="theme-color" content="#0a0c10">
+  <meta name="description" content="Autonomous Mobile Business Card Batch Scanner & Multi-VCF Exporter with Tap-to-Field Chip Mapper">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root {
+      --bg-primary: #0a0c10;
+      --bg-card: #12161f;
+      --bg-input: #0b0d13;
+      --cyan: #00f0ff;
+      --cyan-dim: rgba(0, 240, 255, 0.15);
+      --cyan-glow: 0 0 16px rgba(0, 240, 255, 0.35);
+      --amber: #ffb703;
+      --amber-dim: rgba(255, 183, 3, 0.15);
+      --border: #1e2638;
+      --border-focus: #00f0ff;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --success: #00ff88;
+      --danger: #ff3366;
+      --font-display: 'Chakra Petch', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 40px;
+    }
+
+    header {
+      background: #06070a;
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(8px);
+    }
+    .header-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-logo-img {
+      height: 44px;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.25));
+    }
+    .brand-title {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      letter-spacing: 1.5px;
+      color: var(--cyan);
+      font-weight: 700;
+      line-height: 1.2;
+    }
+    .sub-brand {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+    }
+
+    .nav-tabs {
+      display: flex;
+      max-width: 800px;
+      margin: 12px auto 0;
+      padding: 0 16px;
+      gap: 8px;
+      width: 100%;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 10px 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-muted);
+      font-family: var(--font-display);
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+    .tab-btn.active {
+      background: var(--cyan-dim);
+      border-color: var(--cyan);
+      color: var(--cyan);
+      box-shadow: var(--cyan-glow);
+    }
+    .deck-counter {
+      background: var(--cyan);
+      color: #000;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      padding: 1px 6px;
+      border-radius: 10px;
+      font-weight: bold;
+    }
+
+    main {
+      flex: 1;
+      max-width: 800px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 16px;
+    }
+    .view-panel { display: none; }
+    .view-panel.active { display: block; }
+
+    .action-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      padding-bottom: 8px;
+    }
+    .panel-title {
+      font-family: var(--font-display);
+      font-size: 0.95rem;
+      color: var(--cyan);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-camera-trigger {
+      width: 100%;
+      background: linear-gradient(135deg, #00d2ff 0%, #00f0ff 100%);
+      color: #050b14;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.05rem;
+      padding: 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 4px 16px rgba(0, 240, 255, 0.4);
+      margin-bottom: 8px;
+    }
+    .btn-camera-trigger:active { transform: scale(0.98); }
+    .file-input { display: none; }
+
+    .ocr-status {
+      display: none;
+      background: var(--bg-input);
+      border: 1px dashed var(--cyan);
+      border-radius: 6px;
+      padding: 12px;
+      margin-top: 12px;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--cyan);
+    }
+    .progress-bar-container {
+      width: 100%;
+      height: 4px;
+      background: #1a2234;
+      border-radius: 2px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%;
+      background: var(--cyan);
+      width: 0%;
+      transition: width 0.2s ease;
+    }
+
+    /* OCR Snippet Chips & Quick Mapper */
+    .chips-panel {
+      display: none;
+      background: #0d111a;
+      border: 1px solid #232d42;
+      border-radius: 6px;
+      padding: 12px;
+      margin-top: 12px;
+    }
+    .chips-header {
+      font-family: var(--font-display);
+      font-size: 0.8rem;
+      color: var(--amber);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .chips-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+    .ocr-chip {
+      background: #161c27;
+      border: 1px solid #2c3952;
+      color: #e6edf3;
+      padding: 5px 10px;
+      border-radius: 14px;
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .ocr-chip:hover, .ocr-chip.active {
+      border-color: var(--cyan);
+      background: var(--cyan-dim);
+      color: var(--cyan);
+    }
+    .ocr-chip i { font-size: 0.65rem; color: var(--text-muted); }
+
+    /* Target field picker modal / popover */
+    .field-assign-drawer {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #0d121c;
+      border-top: 2px solid var(--cyan);
+      padding: 18px;
+      z-index: 300;
+      box-shadow: 0 -8px 24px rgba(0,0,0,0.8);
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .drawer-title {
+      font-family: var(--font-display);
+      color: #fff;
+      font-size: 0.9rem;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .drawer-text-preview {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--cyan);
+      background: var(--bg-input);
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      margin-bottom: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .drawer-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .btn-field-target {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--font-display);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 10px 6px;
+      border-radius: 5px;
+      cursor: pointer;
+      text-align: center;
+    }
+    .btn-field-target:active, .btn-field-target:hover {
+      background: var(--cyan-dim);
+      border-color: var(--cyan);
+      color: var(--cyan);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .full-width { grid-column: span 2; }
+    .input-group label {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .input-group input, .input-group textarea {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 10px;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 0.85rem;
+      transition: border-color 0.2s;
+    }
+    .input-group input:focus, .input-group textarea:focus {
+      outline: none;
+      border-color: var(--border-focus);
+      box-shadow: 0 0 8px rgba(0, 240, 255, 0.2);
+    }
+
+    .btn-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .btn-action {
+      padding: 12px;
+      border-radius: 5px;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border: 1px solid transparent;
+    }
+    .btn-queue-next {
+      background: var(--cyan);
+      color: #050b14;
+      grid-column: span 2;
+      padding: 14px;
+      font-size: 0.95rem;
+      box-shadow: var(--cyan-glow);
+    }
+    .btn-vcf-single {
+      background: transparent;
+      border-color: var(--border);
+      color: var(--text);
+    }
+    .btn-vcf-single:hover { border-color: var(--cyan); color: var(--cyan); }
+    .btn-clear {
+      background: transparent;
+      border-color: #3d1b26;
+      color: var(--danger);
+    }
+
+    .deck-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--cyan);
+      border-radius: 6px;
+      padding: 12px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .deck-info-name {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #fff;
+    }
+    .deck-info-meta {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .deck-item-actions {
+      display: flex;
+      gap: 6px;
+    }
+    .btn-icon-tiny {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 8px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .btn-icon-tiny:hover { color: var(--text); border-color: var(--cyan); }
+    .btn-icon-tiny.delete:hover { color: var(--danger); border-color: var(--danger); }
+
+    .btn-deck-share {
+      width: 100%;
+      background: linear-gradient(135deg, #00f0ff 0%, #0088ff 100%);
+      color: #000;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 15px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      box-shadow: 0 4px 16px rgba(0, 240, 255, 0.4);
+    }
+    .btn-deck-download-all {
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--cyan);
+      color: var(--cyan);
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.85rem;
+      padding: 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #00f0ff;
+      color: #000;
+      padding: 10px 18px;
+      border-radius: 30px;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.85rem;
+      z-index: 200;
+      display: none;
+      box-shadow: 0 4px 20px rgba(0, 240, 255, 0.5);
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+</head>
+<body>
+
+  <header>
+    <div class="header-inner">
+      <div class="logo-container">
+        <!-- Logo Image: place Blackmoon Header.jpg or logo.jpg in root repo -->
+        <img src="logo.jpg" onerror="this.src='Blackmoon Header.jpg'; this.onerror=null;" alt="BLACKMOON 0-1-0" class="brand-logo-img">
+        <div>
+          <div class="brand-title">// ECLIPSE</div>
+          <div class="sub-brand">ELECTRONIC CARD LOADER &amp; SCANNER</div>
+        </div>
+      </div>
+      <div>
+        <button class="btn-icon-tiny" onclick="resetActiveForm()" title="Clear Screen"><i class="fa-solid fa-arrows-rotate"></i></button>
+      </div>
+    </div>
+  </header>
+
+  <div class="nav-tabs">
+    <button class="tab-btn active" id="tabScan" onclick="switchTab('scan')">
+      <i class="fa-solid fa-camera"></i> SCAN &amp; PARSE
+    </button>
+    <button class="tab-btn" id="tabDeck" onclick="switchTab('deck')">
+      <i class="fa-solid fa-layer-group"></i> BATCH DECK
+      <span class="deck-counter" id="deckBadge">0</span>
+    </button>
+  </div>
+
+  <main>
+    <!-- SCANNER & ACTIVE CARD VIEW -->
+    <div class="view-panel active" id="panelScan">
+      <div class="action-panel">
+        <div class="panel-header">
+          <span class="panel-title"><i class="fa-solid fa-bolt"></i> OPTICAL ACQUISITION</span>
+          <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted);" id="deckQuickCount">0 in deck</span>
+        </div>
+
+        <input type="file" id="cameraInput" class="file-input" accept="image/*" capture="environment">
+        <button class="btn-camera-trigger" onclick="document.getElementById('cameraInput').click()">
+          <i class="fa-solid fa-camera"></i> SNAP CARD WITH CAMERA
+        </button>
+
+        <div class="ocr-status" id="ocrBox">
+          <div id="ocrMessage"><i class="fa-solid fa-spinner fa-spin"></i> Preprocessing &amp; Reading Text...</div>
+          <div class="progress-bar-container">
+            <div class="progress-bar" id="ocrProgress"></div>
+          </div>
+        </div>
+
+        <!-- TAP-TO-ASSIGN CHIPS CONTAINER -->
+        <div class="chips-panel" id="chipsPanel">
+          <div class="chips-header">
+            <i class="fa-solid fa-hand-pointer"></i> TAP ANY DETECTED LINE TO RE-MAP IT:
+          </div>
+          <div class="chips-container" id="chipsList"></div>
+        </div>
+      </div>
+
+      <!-- ACTIVE CONTACT BUFFER FORM -->
+      <div class="action-panel">
+        <div class="panel-header">
+          <span class="panel-title"><i class="fa-regular fa-id-card"></i> Contact Buffer</span>
+          <button class="btn-icon-tiny" onclick="resetActiveForm()"><i class="fa-solid fa-eraser"></i></button>
+        </div>
+
+        <div class="form-grid">
+          <div class="input-group">
+            <label>First Name</label>
+            <input type="text" id="fn" placeholder="First Name">
+          </div>
+          <div class="input-group">
+            <label>Last Name</label>
+            <input type="text" id="ln" placeholder="Last Name">
+          </div>
+          <div class="input-group full-width">
+            <label>Company / Agency</label>
+            <input type="text" id="company" placeholder="Organization">
+          </div>
+          <div class="input-group full-width">
+            <label>Job Title</label>
+            <input type="text" id="title" placeholder="Position / Title">
+          </div>
+          <div class="input-group">
+            <label>Mobile Phone</label>
+            <input type="tel" id="mobile" placeholder="Mobile">
+          </div>
+          <div class="input-group">
+            <label>Work Phone</label>
+            <input type="tel" id="workPhone" placeholder="Office / Direct">
+          </div>
+          <div class="input-group full-width">
+            <label>Email Address</label>
+            <input type="email" id="email" placeholder="email@address.com">
+          </div>
+          <div class="input-group full-width">
+            <label>Website</label>
+            <input type="text" id="web" placeholder="https://...">
+          </div>
+          <div class="input-group full-width">
+            <label>Address</label>
+            <input type="text" id="address" placeholder="Street, City, State ZIP">
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-action btn-queue-next" onclick="queueAndScanNext()">
+            <i class="fa-solid fa-plus-circle"></i> QUEUE &amp; SNAP NEXT CARD
+          </button>
+          <button class="btn-action btn-vcf-single" onclick="saveSingleCardVCF()">
+            <i class="fa-solid fa-floppy-disk"></i> Save Single .VCF
+          </button>
+          <button class="btn-action btn-clear" onclick="resetActiveForm()">
+            <i class="fa-solid fa-trash"></i> Clear Form
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BATCH DECK VIEW -->
+    <div class="view-panel" id="panelDeck">
+      <div class="action-panel">
+        <div class="panel-header">
+          <span class="panel-title"><i class="fa-solid fa-layer-group"></i> DISPATCH DECK</span>
+          <button class="btn-icon-tiny delete" onclick="clearDeck()"><i class="fa-solid fa-trash"></i> Empty Deck</button>
+        </div>
+
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px; font-family: var(--font-mono);">
+          Exports each card as its own individual .vcf file attached to a single email draft.
+        </p>
+
+        <button class="btn-deck-share" onclick="shareMultiVcfBatch()">
+          <i class="fa-solid fa-paper-plane"></i> EMAIL ALL INDIVIDUAL .VCFs
+        </button>
+        <button class="btn-deck-download-all" onclick="downloadAllSeparateVcfs()">
+          <i class="fa-solid fa-file-arrow-down"></i> Download All as Individual Files
+        </button>
+      </div>
+
+      <div id="deckListContainer"></div>
+    </div>
+  </main>
+
+  <!-- QUICK FIELD ASSIGNMENT DRAWER -->
+  <div class="field-assign-drawer" id="fieldAssignDrawer">
+    <div class="drawer-title">
+      <span>ASSIGN TO FIELD:</span>
+      <button class="btn-icon-tiny" onclick="closeAssignDrawer()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="drawer-text-preview" id="drawerSnippet">"Selected Text"</div>
+    <div class="drawer-grid">
+      <button class="btn-field-target" onclick="assignActiveSnippet('name')">Name</button>
+      <button class="btn-field-target" onclick="assignActiveSnippet('company')">Company</button>
+      <button class="btn-field-target" onclick="assignActiveSnippet('title')">Job Title</button>
+      <button class="btn-field-target" onclick="assignActiveSnippet('mobile')">Cell Phone</button>
+      <button class="btn-field-target" onclick="assignActiveSnippet('workPhone')">Office Phone</button>
+      <button class="btn-field-target" onclick="assignActiveSnippet('email')">Email</button>
+      <button class="btn-field-target" onclick="assignActiveSnippet('web')">Website</button>
+      <button class="btn-field-target" onclick="assignActiveSnippet('address')">Address</button>
+      <button class="btn-field-target" style="color: var(--danger); border-color: #3d1b26;" onclick="closeAssignDrawer()">Cancel</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toastBox">Message</div>
+
+  <script>
+    let deck = JSON.parse(localStorage.getItem('eclipse_deck') || '[]');
+    let currentSnippets = [];
+    let selectedSnippetText = '';
+    updateDeckUI();
+
+    function switchTab(target) {
+      document.getElementById('panelScan').classList.toggle('active', target === 'scan');
+      document.getElementById('panelDeck').classList.toggle('active', target === 'deck');
+      document.getElementById('tabScan').classList.toggle('active', target === 'scan');
+      document.getElementById('tabDeck').classList.toggle('active', target === 'deck');
+    }
+
+    function showToast(text) {
+      const toast = document.getElementById('toastBox');
+      toast.innerText = text;
+      toast.style.display = 'block';
+      setTimeout(() => toast.style.display = 'none', 3000);
+    }
+
+    // IMAGE PRE-PROCESSING FOR ORNATE & STYLIZED FONTS
+    async function preprocessImage(file) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          // Max dimension clamp to 1800px for speed and clean contrast
+          const maxDim = 1800;
+          let width = img.width;
+          let height = img.height;
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Enhance contrast & binarization for ornate / metallic card stock
+          const imgData = ctx.getImageData(0, 0, width, height);
+          const d = imgData.data;
+          for (let i = 0; i < d.length; i += 4) {
+            // Grayscale
+            const avg = 0.299 * d[i] + 0.587 * d[i+1] + 0.114 * d[i+2];
+            // Adaptive contrast stretch
+            const contrast = 1.35;
+            const factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
+            const newVal = factor * (avg - 128) + 128;
+            d[i] = newVal;
+            d[i+1] = newVal;
+            d[i+2] = newVal;
+          }
+          ctx.putImageData(imgData, 0, 0);
+          canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.92);
+        };
+        img.src = URL.createObjectURL(file);
+      });
+    }
+
+    // CAMERA & OCR PIPELINE
+    const cameraInput = document.getElementById('cameraInput');
+    cameraInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const ocrBox = document.getElementById('ocrBox');
+      const ocrProgress = document.getElementById('ocrProgress');
+      const ocrMessage = document.getElementById('ocrMessage');
+      ocrBox.style.display = 'block';
+      ocrProgress.style.width = '20%';
+
+      try {
+        ocrMessage.innerText = "Enhancing card contrast & sharpness...";
+        const preprocessedBlob = await preprocessImage(file);
+        ocrProgress.style.width = '50%';
+
+        ocrMessage.innerText = "Tesseract engine parsing text...";
+        const worker = await Tesseract.createWorker('eng');
+        const ret = await worker.recognize(preprocessedBlob);
+        ocrProgress.style.width = '90%';
+
+        parseRawText(ret.data.text);
+        renderSnippets(ret.data.text);
+        
+        await worker.terminate();
+        ocrProgress.style.width = '100%';
+        ocrBox.style.display = 'none';
+        showToast("Card Read & Parsed");
+      } catch (err) {
+        ocrMessage.innerText = "OCR Glitch. Tap chips below to assign manually.";
+        setTimeout(() => ocrBox.style.display = 'none', 3000);
+      }
+    });
+
+    function renderSnippets(raw) {
+      const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 2);
+      currentSnippets = lines;
+      const chipsContainer = document.getElementById('chipsList');
+      const chipsPanel = document.getElementById('chipsPanel');
+
+      if (lines.length === 0) {
+        chipsPanel.style.display = 'none';
+        return;
+      }
+
+      chipsContainer.innerHTML = lines.map((line, idx) => `
+        <div class="ocr-chip" onclick="openAssignDrawer(${idx})">
+          <i class="fa-solid fa-arrow-right-to-bracket"></i> ${escapeHtml(line)}
+        </div>
+      `).join('');
+      chipsPanel.style.display = 'block';
+    }
+
+    function openAssignDrawer(idx) {
+      selectedSnippetText = currentSnippets[idx];
+      document.getElementById('drawerSnippet').innerText = `"${selectedSnippetText}"`;
+      document.getElementById('fieldAssignDrawer').style.display = 'block';
+    }
+
+    function closeAssignDrawer() {
+      document.getElementById('fieldAssignDrawer').style.display = 'none';
+      selectedSnippetText = '';
+    }
+
+    function assignActiveSnippet(fieldKey) {
+      if (!selectedSnippetText) return;
+      const text = selectedSnippetText;
+
+      if (fieldKey === 'name') {
+        const parts = text.replace(/[^a-zA-Z\s]/g, '').trim().split(/\s+/);
+        if (parts.length >= 2) {
+          document.getElementById('fn').value = parts[0];
+          document.getElementById('ln').value = parts.slice(1).join(' ');
+        } else {
+          document.getElementById('fn').value = parts[0] || text;
+        }
+      } else if (fieldKey === 'mobile') {
+        document.getElementById('mobile').value = text;
+      } else if (fieldKey === 'workPhone') {
+        document.getElementById('workPhone').value = text;
+      } else if (fieldKey === 'company') {
+        document.getElementById('company').value = text;
+      } else if (fieldKey === 'title') {
+        document.getElementById('title').value = text;
+      } else if (fieldKey === 'email') {
+        const match = text.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/i);
+        document.getElementById('email').value = match ? match[0] : text;
+      } else if (fieldKey === 'web') {
+        document.getElementById('web').value = text;
+      } else if (fieldKey === 'address') {
+        const currentAddr = document.getElementById('address').value;
+        document.getElementById('address').value = currentAddr ? `${currentAddr}, ${text}` : text;
+      }
+
+      closeAssignDrawer();
+      showToast(`Mapped to ${fieldKey.toUpperCase()}`);
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function parseRawText(raw) {
+      const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+      
+      const emailRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/i;
+      const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+|[a-zA-Z0-9.-]+\.(?:com|org|net|gov|edu|io|us))/i;
+      const phoneRegex = /(?:\+?1[-.\s]?)?(?:\(?\d{3}\)?[-.\s]?)?\d{3}[-.\s]?\d{4}/g;
+
+      let email = '', web = '', phones = [];
+
+      lines.forEach(line => {
+        const eMatch = line.match(emailRegex);
+        if (eMatch && !email) email = eMatch[0];
+        const uMatch = line.match(urlRegex);
+        if (uMatch && !web && !uMatch[0].includes('@')) web = uMatch[0];
+        const pMatch = line.match(phoneRegex);
+        if (pMatch) phones.push(...pMatch);
+      });
+
+      if (email) document.getElementById('email').value = email;
+      if (web) document.getElementById('web').value = web;
+      if (phones.length > 0) document.getElementById('mobile').value = phones[0];
+      if (phones.length > 1) document.getElementById('workPhone').value = phones[1];
+
+      // Clean lines for names and titles
+      const cleanLines = lines.filter(l => !l.match(emailRegex) && !l.match(urlRegex) && !l.match(phoneRegex));
+      if (cleanLines.length > 0) {
+        const nameParts = cleanLines[0].replace(/[^a-zA-Z\s]/g, '').trim().split(/\s+/);
+        if (nameParts.length >= 2) {
+          document.getElementById('fn').value = nameParts[0];
+          document.getElementById('ln').value = nameParts.slice(1).join(' ');
+        } else {
+          document.getElementById('fn').value = nameParts[0] || '';
+        }
+      }
+      if (cleanLines.length > 1) document.getElementById('title').value = cleanLines[1];
+      if (cleanLines.length > 2) document.getElementById('company').value = cleanLines[2];
+      if (cleanLines.length > 3) {
+        // Collect remaining lines as address
+        document.getElementById('address').value = cleanLines.slice(3).join(', ');
+      }
+    }
+
+    function getActiveCard() {
+      return {
+        id: Date.now().toString(),
+        fn: document.getElementById('fn').value.trim(),
+        ln: document.getElementById('ln').value.trim(),
+        company: document.getElementById('company').value.trim(),
+        title: document.getElementById('title').value.trim(),
+        mobile: document.getElementById('mobile').value.trim(),
+        workPhone: document.getElementById('workPhone').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        web: document.getElementById('web').value.trim(),
+        address: document.getElementById('address').value.trim()
+      };
+    }
+
+    function generateVCardString(c) {
+      const fullName = (c.fn + " " + c.ln).trim() || "Contact";
+      let vcf = "BEGIN:VCARD\r\nVERSION:3.0\r\n";
+      vcf += `FN:${fullName}\r\n`;
+      vcf += `N:${c.ln};${c.fn};;;\r\n`;
+      if (c.company) vcf += `ORG:${c.company}\r\n`;
+      if (c.title) vcf += `TITLE:${c.title}\r\n`;
+      if (c.mobile) vcf += `TEL;TYPE=CELL,VOICE:${c.mobile}\r\n`;
+      if (c.workPhone) vcf += `TEL;TYPE=WORK,VOICE:${c.workPhone}\r\n`;
+      if (c.email) vcf += `EMAIL;TYPE=PREF,INTERNET:${c.email}\r\n`;
+      if (c.web) vcf += `URL:${c.web}\r\n`;
+      if (c.address) vcf += `ADR;TYPE=WORK:;;${c.address};;;;\r\n`;
+      vcf += "END:VCARD\r\n";
+      return vcf;
+    }
+
+    function queueAndScanNext() {
+      const card = getActiveCard();
+      if (!card.fn && !card.ln && !card.company && !card.email) {
+        showToast("Enter contact info before queuing");
+        return;
+      }
+      deck.push(card);
+      localStorage.setItem('eclipse_deck', JSON.stringify(deck));
+      updateDeckUI();
+      resetActiveForm();
+      showToast("Card Queued in Deck");
+      document.getElementById('cameraInput').click();
+    }
+
+    function resetActiveForm() {
+      ['fn', 'ln', 'company', 'title', 'mobile', 'workPhone', 'email', 'web', 'address'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+      document.getElementById('chipsPanel').style.display = 'none';
+      document.getElementById('chipsList').innerHTML = '';
+      closeAssignDrawer();
+    }
+
+    function updateDeckUI() {
+      document.getElementById('deckBadge').innerText = deck.length;
+      document.getElementById('deckQuickCount').innerText = `${deck.length} in deck`;
+      const container = document.getElementById('deckListContainer');
+
+      if (deck.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; color: var(--text-muted); padding: 30px; font-family: var(--font-mono); font-size: 0.8rem;">
+            [ DECK EMPTY - SNAP CARDS TO FILL ]
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = deck.map((c, i) => `
+        <div class="deck-item">
+          <div>
+            <div class="deck-info-name">${c.fn || ''} ${c.ln || 'Unnamed'}</div>
+            <div class="deck-info-meta">${c.company || 'No Organization'} • ${c.mobile || c.email || 'No Direct Contact'}</div>
+          </div>
+          <div class="deck-item-actions">
+            <button class="btn-icon-tiny" onclick="editDeckItem(${i})" title="Edit"><i class="fa-solid fa-pen"></i></button>
+            <button class="btn-icon-tiny delete" onclick="deleteDeckItem(${i})" title="Delete"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function deleteDeckItem(index) {
+      deck.splice(index, 1);
+      localStorage.setItem('eclipse_deck', JSON.stringify(deck));
+      updateDeckUI();
+    }
+
+    function editDeckItem(index) {
+      const c = deck[index];
+      ['fn', 'ln', 'company', 'title', 'mobile', 'workPhone', 'email', 'web', 'address'].forEach(id => {
+        document.getElementById(id).value = c[id] || '';
+      });
+      deleteDeckItem(index);
+      switchTab('scan');
+    }
+
+    function clearDeck() {
+      if (!confirm("Clear all cards from the deck?")) return;
+      deck = [];
+      localStorage.setItem('eclipse_deck', JSON.stringify(deck));
+      updateDeckUI();
+      showToast("Deck Emptied");
+    }
+
+    // MULTI-VCF GENERATION & NATIVE SHARE ATTACHMENT
+    function createVcfFilesArray() {
+      return deck.map(card => {
+        const vcfText = generateVCardString(card);
+        const rawName = `${card.fn || ''}_${card.ln || ''}`.trim() || card.company || "Contact";
+        const cleanName = rawName.replace(/[^a-zA-Z0-9_-]/g, '_');
+        return new File([vcfText], `${cleanName}.vcf`, { type: 'text/vcard' });
+      });
+    }
+
+    async function shareMultiVcfBatch() {
+      if (deck.length === 0) {
+        showToast("Deck is empty");
+        return;
+      }
+
+      const files = createVcfFilesArray();
+
+      if (navigator.canShare && navigator.canShare({ files: files })) {
+        try {
+          await navigator.share({
+            files: files,
+            title: `Batch Contacts (${deck.length} cards)`,
+            text: `Attached are ${deck.length} contact cards exported from BLACKMOON ECLIPSE.`
+          });
+          showToast("Batch dispatched to email");
+        } catch (err) {
+          if (err.name !== 'AbortError') {
+            downloadAllSeparateVcfs();
+          }
+        }
+      } else {
+        downloadAllSeparateVcfs();
+      }
+    }
+
+    function downloadAllSeparateVcfs() {
+      if (deck.length === 0) {
+        showToast("Deck is empty");
+        return;
+      }
+      const files = createVcfFilesArray();
+      files.forEach((file, index) => {
+        setTimeout(() => {
+          const url = URL.createObjectURL(file);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = file.name;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }, index * 250);
+      });
+      showToast(`Downloading ${deck.length} separate .VCF files`);
+    }
+
+    function saveSingleCardVCF() {
+      const card = getActiveCard();
+      const text = generateVCardString(card);
+      const name = `${card.fn || ''}_${card.ln || ''}`.trim() || "Contact";
+      const blob = new Blob([text], { type: 'text/vcard' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `${name.replace(/[^a-zA-Z0-9_-]/g, '_')}.vcf`;
+      a.click();
+    }
+  </script>
+</body>
+</html>
